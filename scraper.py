@@ -87,7 +87,6 @@ ALWAYS_INCLUDE_SOURCES = {
 #  KEYWORDS — Deutsch & Englisch
 # ─────────────────────────────────────────────────────────────────────────────
 KEYWORDS = [
-    # ── Frauen & Feminismus (Deutsch) ───────────────────────────────────────
     "frauen", "frau", "mädchen", "weiblich", "weibliche",
     "feminismus", "feministisch", "feminist",
     "gleichberechtigung", "gleichstellung", "frauenrechte",
@@ -111,8 +110,6 @@ KEYWORDS = [
     "trafficking", "menschenhandel",
     "körperbild", "essstörung", "magersucht", "bulimie",
     "mutterschaftsstrafe", "care-arbeit", "unbezahlte arbeit",
-
-    # ── LGBTQIA+ (Deutsch) ──────────────────────────────────────────────────
     "schwul", "lesbisch", "bisexuell",
     "transgender", "transsexuell", "transgeschlechtlich",
     "trans*", "transperson", "transfrauen", "transmänner",
@@ -130,8 +127,6 @@ KEYWORDS = [
     "konversionstherapie", "heilungsversuch",
     "geschlechtsangleichung", "geschlechtsangleichende operation",
     "pubertätsblocker",
-
-    # ── Migration & Asyl (Deutsch) ──────────────────────────────────────────
     "flüchtling", "flüchtlinge", "geflüchtete", "asylsuchende",
     "asylbewerber", "asylbewerberin", "asylverfahren",
     "migration", "migrant", "migrantin", "einwanderung", "einwanderer",
@@ -140,16 +135,12 @@ KEYWORDS = [
     "fremdenfeindlichkeit", "ausländerfeindlichkeit", "rassismus",
     "diskriminierung", "antirassismus",
     "flucht", "vertreibung", "vertrieben",
-
-    # ── Menschenrechte (Deutsch) ────────────────────────────────────────────
     "menschenrechte", "bürgerrechte",
     "protest", "aktivismus", "aktivist", "aktivistin",
     "zensur", "pressefreiheit", "meinungsfreiheit",
     "minderheitenrechte", "indigene rechte",
     "humanitär", "humanitäre krise",
-    "demokratie", "diskriminierung",
-
-    # ── English keywords (kept for international sources) ───────────────────
+    "demokratie",
     "women", "woman", "girl", "girls", "female", "feminism",
     "feminist", "gender equality", "gender gap", "gender pay gap", "equal pay",
     "reproductive rights", "abortion",
@@ -166,11 +157,10 @@ KEYWORDS = [
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  TOPIC KEYWORDS (12 Themen, Mehrfachauswahl)
+#  TOPIC KEYWORDS
 # ─────────────────────────────────────────────────────────────────────────────
 TOPIC_KEYWORDS = {
     "Reproduktive Rechte": [
-        # Deutsch
         "abtreibung", "schwangerschaftsabbruch", "paragraph 218",
         "reproduktive rechte", "geburtenkontrolle", "verhütung",
         "verhütungsmittel", "pille danach", "schwangerschaft",
@@ -180,25 +170,21 @@ TOPIC_KEYWORDS = {
         "stillen", "stillzeit", "postpartum", "pränatal",
         "reproduktive gerechtigkeit", "körperliche selbstbestimmung",
         "menstruation", "periode", "menstruationsarmut",
-        # English
         "reproductive", "abortion", "pro-choice", "birth control",
         "contraception", "fertility", "ivf", "pregnancy",
         "maternal mortality", "gynecolog", "bodily autonomy",
     ],
     "Lohnlücke & Wirtschaft": [
-        # Deutsch
         "lohnlücke", "lohnungleichheit", "entgeltungleichheit",
         "lohngleichheit", "entgeltgleichheit", "geschlechtslohnlücke",
         "gläserne decke", "frauenquote", "frauenförderung",
         "care-arbeit", "unbezahlte arbeit", "mutterschaftsstrafe",
         "elterngeld", "teilzeitfalle",
-        # English
         "pay gap", "wage gap", "equal pay", "gender pay", "salary gap",
         "income inequality", "glass ceiling", "gender parity",
         "motherhood penalty", "parental leave",
     ],
     "LGBTQIA+": [
-        # Deutsch
         "schwul", "lesbisch", "bisexuell", "transgender", "transsexuell",
         "nicht-binär", "nichtbinär", "intergeschlechtlich", "queer",
         "homosexuell", "coming out", "homophobie", "transphobie",
@@ -206,70 +192,58 @@ TOPIC_KEYWORDS = {
         "drag queen", "drag king", "geschlechtsidentität",
         "pronomen", "lsbtiq", "konversionstherapie",
         "geschlechtsangleichung", "pubertätsblocker",
-        # English
         "lgbt", "lgbtq", "lgbtqia", "gay", "lesbian",
         "trans rights", "homophobia", "transphobia", "pride",
         "same-sex", "gender affirming", "conversion therapy",
     ],
     "Migration & Asyl": [
-        # Deutsch
         "flüchtling", "flüchtlinge", "geflüchtete", "asylsuchende",
         "asylbewerber", "migration", "migrant", "einwanderung",
         "abschiebung", "rückführung", "aufenthaltsrecht",
         "einbürgerung", "staatsangehörigkeit",
         "fremdenfeindlichkeit", "flucht", "vertreibung",
-        # English
         "immigration", "refugee", "asylum", "migrant",
         "deportation", "border", "citizenship", "diaspora",
         "xenophobia", "trafficking",
     ],
     "Menschenrechte": [
-        # Deutsch
         "menschenrechte", "bürgerrechte", "diskriminierung",
         "rassismus", "antirassismus", "protest", "aktivismus",
         "zensur", "pressefreiheit", "meinungsfreiheit",
         "minderheitenrechte", "humanitär",
-        # English
         "human rights", "civil rights", "discrimination",
         "racism", "protest", "activism", "censorship", "humanitarian",
     ],
     "Gesundheit & Medizin": [
-        # Deutsch
         "gesundheit", "medizin", "krankenhaus", "klinik", "arzt", "ärztin",
         "psychische gesundheit", "therapie", "diagnose", "behandlung",
         "hormon", "hormontherapie", "essstörung", "körperbild",
         "hiv", "krebs", "brustkrebs", "gebärmutterhalskrebs",
         "impfung", "impfstoff", "pandemie",
         "pubertätsblocker", "geschlechtsangleichende",
-        # English
         "health", "medical", "healthcare", "mental health", "therapy",
         "hormone", "eating disorder", "hiv", "cancer", "pandemic",
         "vaccination", "gender affirming care",
     ],
     "Recht & Politik": [
-        # Deutsch
         "gesetz", "recht", "gericht", "klage", "gesetzgebung",
         "bundesgesetz", "urteil", "richter", "richterinnen", "anwalt", "anwältin",
         "verbot", "reform", "bundesverfassungsgericht", "europäischer gerichtshof",
         "paragraph", "strafgesetzbuch", "grundgesetz",
-        # English
         "law", "legal", "court", "lawsuit", "legislation",
         "ruling", "supreme court", "ban", "regulation",
     ],
     "Politik & Regierung": [
-        # Deutsch
         "wahl", "abstimmung", "bundestagswahl", "politiker", "politikerin",
         "bundestag", "bundesrat", "bundesregierung", "bundeskanzler", "bundeskanzlerin",
         "minister", "ministerin", "partei", "koalition",
         "wahlkampf", "kandidat", "kandidatin",
         "spd", "cdu", "csu", "grüne", "fdp", "afd", "linke", "bsw",
         "landtag", "kommunalpolitik", "europaparlament",
-        # English
         "election", "vote", "parliament", "minister", "president",
         "campaign", "political", "government",
     ],
     "Kultur & Medien": [
-        # Deutsch
         "film", "kino", "fernsehen", "serie", "streaming",
         "buch", "roman", "autorin", "autor", "lyrik", "poesie",
         "musik", "konzert", "festival", "album",
@@ -277,39 +251,32 @@ TOPIC_KEYWORDS = {
         "mode", "dokumentation", "podcast", "interview",
         "drag queen", "drag king", "preis", "award",
         "repräsentation", "sichtbarkeit",
-        # English
-        "film", "movie", "television", "book", "novel",
+        "movie", "television", "book", "novel",
         "music", "art", "exhibition", "fashion", "documentary",
         "representation", "visibility",
     ],
     "Sport": [
-        # Deutsch
         "sport", "athletin", "olympia", "wettkampf", "meisterschaft",
         "fußball", "basketball", "tennis", "schwimmen",
         "weltmeisterschaft", "frauen im sport", "mannschaft",
         "trainerin", "liga", "turnier", "medaille",
         "transgender sportlerin", "inklusion im sport",
         "dfb", "dlv", "dsb",
-        # English
-        "sport", "athlete", "olympic", "competition", "championship",
-        "football", "soccer", "basketball", "tennis",
-        "world cup", "women in sport", "transgender athlete",
+        "athlete", "olympic", "competition", "championship",
+        "football", "soccer", "world cup", "women in sport", "transgender athlete",
     ],
     "Gewalt & Sicherheit": [
-        # Deutsch
         "gewalt", "angriff", "mord", "getötet", "femizid", "frauenmord",
         "häusliche gewalt", "missbrauch", "misshandlung", "opfer", "überlebende",
         "vergewaltigung", "sexuelle gewalt", "belästigung",
         "hassverbrechen", "hassrede", "bedrohung", "stalking",
         "menschenhandel", "frauenhandel",
         "sicherheit", "schutz", "frauenhaus", "schutzorder",
-        # English
         "violence", "assault", "murder", "domestic violence",
         "abuse", "rape", "sexual assault", "hate crime",
         "trafficking", "femicide", "safety",
     ],
     "Arbeit & Wirtschaft": [
-        # Deutsch
         "arbeitsplatz", "beschäftigung", "arbeitgeber", "arbeitnehmerin",
         "beruf", "karriere", "einstellung", "entlassung", "stellenabbau",
         "geschäftsführerin", "vorstand", "führungsposition",
@@ -317,10 +284,8 @@ TOPIC_KEYWORDS = {
         "unternehmerin", "startup", "wirtschaft", "armut",
         "kinderfürsorge", "kinderbetreuung", "kita",
         "elternzeit", "mutterschutz", "work-life-balance",
-        # English
         "workplace", "employment", "career", "leadership",
-        "ceo", "board", "discrimination at work",
-        "entrepreneurship", "economy", "poverty", "childcare",
+        "ceo", "board", "entrepreneurship", "economy", "poverty", "childcare",
         "parental leave", "work-life balance",
     ],
 }
@@ -349,12 +314,12 @@ def setup_database():
                 tags         TEXT,
                 topics       TEXT    DEFAULT '',
                 scraped_at   TEXT,
-                published_at TEXT    DEFAULT ''
+                published_at TEXT    DEFAULT '',
+                image_url    TEXT    DEFAULT ''
             )
         """)
-        cursor.execute("""
-            ALTER TABLE articles ADD COLUMN IF NOT EXISTS published_at TEXT DEFAULT ''
-        """)
+        cursor.execute("ALTER TABLE articles ADD COLUMN IF NOT EXISTS published_at TEXT DEFAULT ''")
+        cursor.execute("ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_url TEXT DEFAULT ''")
     else:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS articles (
@@ -369,17 +334,22 @@ def setup_database():
                 tags         TEXT,
                 topics       TEXT    DEFAULT '',
                 scraped_at   TEXT,
-                published_at TEXT    DEFAULT ''
+                published_at TEXT    DEFAULT '',
+                image_url    TEXT    DEFAULT ''
             )
         """)
         try:
             cursor.execute("ALTER TABLE articles ADD COLUMN published_at TEXT DEFAULT ''")
         except Exception:
-            pass  # Column already exists
+            pass
+        try:
+            cursor.execute("ALTER TABLE articles ADD COLUMN image_url TEXT DEFAULT ''")
+        except Exception:
+            pass
 
     conn.commit()
     conn.close()
-    print("✅ Database ready.")
+    print("Database ready.")
 
 
 def url_hash(url):
@@ -388,6 +358,45 @@ def url_hash(url):
 
 def strip_html(text):
     return re.sub(r'<[^>]+>', '', text or '').strip()
+
+
+def get_image_url(entry):
+    """Try to extract an image URL from an RSS entry."""
+    # Try media_content
+    media_content = getattr(entry, 'media_content', None)
+    if media_content:
+        for media in media_content:
+            if isinstance(media, dict) and media.get('type', '').startswith('image'):
+                return media.get('url', '')
+        # Some feeds don't specify type but still have image urls
+        for media in media_content:
+            if isinstance(media, dict) and media.get('url', ''):
+                url = media.get('url', '')
+                if any(ext in url.lower() for ext in ['.jpg', '.jpeg', '.png', '.webp', '.gif']):
+                    return url
+
+    # Try media_thumbnail
+    media_thumbnail = getattr(entry, 'media_thumbnail', None)
+    if media_thumbnail and len(media_thumbnail) > 0:
+        return media_thumbnail[0].get('url', '')
+
+    # Try links
+    for link in entry.get('links', []):
+        if link.get('type', '').startswith('image'):
+            return link.get('href', '')
+
+    # Try to extract from summary HTML
+    summary_raw = entry.get('summary', '')
+    img_match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', summary_raw)
+    if img_match:
+        return img_match.group(1)
+
+    # Try enclosures
+    for enclosure in entry.get('enclosures', []):
+        if enclosure.get('type', '').startswith('image'):
+            return enclosure.get('url', '')
+
+    return ''
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -445,7 +454,7 @@ def scrape_all_feeds():
     for source_name, feed_info in FEEDS.items():
         feed_url = feed_info["url"]
         country  = feed_info["country"]
-        print(f"  📡 Scraping: {source_name}...", flush=True)
+        print(f"  Scraping: {source_name}...", flush=True)
         try:
             feed    = feedparser.parse(feed_url)
             entries = feed.entries[:MAX_ARTICLES_PER_SOURCE]
@@ -455,10 +464,11 @@ def scrape_all_feeds():
             cursor = conn.cursor()
 
             for entry in entries:
-                link    = entry.get("link", "")
-                title   = strip_html(entry.get("title", "No title"))
-                summary = strip_html(entry.get("summary", ""))
-                hash_id = url_hash(link)
+                link      = entry.get("link", "")
+                title     = strip_html(entry.get("title", "No title"))
+                summary   = strip_html(entry.get("summary", ""))
+                hash_id   = url_hash(link)
+                image_url = get_image_url(entry)
 
                 pub_parsed = entry.get("published_parsed") or entry.get("updated_parsed")
                 if pub_parsed:
@@ -492,23 +502,23 @@ def scrape_all_feeds():
                         cursor.execute(f"""
                             INSERT INTO articles
                               (url_hash, title, link, summary, source, country,
-                               category, tags, topics, scraped_at, published_at)
-                            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
+                               category, tags, topics, scraped_at, published_at, image_url)
+                            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
                             ON CONFLICT (url_hash) DO NOTHING
                         """, (hash_id, title, link, summary, source_name, country,
                               category, tags_str, topics_str, datetime.now().isoformat(),
-                              published_at))
+                              published_at, image_url))
                         if cursor.rowcount > 0:
                             new_count += 1
                     else:
                         cursor.execute(f"""
                             INSERT OR IGNORE INTO articles
                               (url_hash, title, link, summary, source, country,
-                               category, tags, topics, scraped_at, published_at)
-                            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
+                               category, tags, topics, scraped_at, published_at, image_url)
+                            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
                         """, (hash_id, title, link, summary, source_name, country,
                               category, tags_str, topics_str, datetime.now().isoformat(),
-                              published_at))
+                              published_at, image_url))
                         if cursor.rowcount > 0:
                             new_count += 1
                 except Exception:
@@ -516,13 +526,13 @@ def scrape_all_feeds():
 
             conn.commit()
             conn.close()
-            print(f"     ✔  {new_count} new articles from {source_name}", flush=True)
+            print(f"     {new_count} new articles from {source_name}", flush=True)
             total_new += new_count
 
         except Exception as e:
-            print(f"     ❌  Error scraping {source_name}: {e}", flush=True)
+            print(f"     Error scraping {source_name}: {e}", flush=True)
 
-    print(f"\n🎉 Done! {total_new} new articles saved in total.", flush=True)
+    print(f"Done! {total_new} new articles saved in total.", flush=True)
 
 
 def get_all_articles(category=None, source=None, search=None, topic=None,
@@ -580,6 +590,6 @@ def get_all_articles(category=None, source=None, search=None, topic=None,
 
 
 if __name__ == "__main__":
-    print("🗞️  Deutsche Medien Scraper startet...\n")
+    print("Deutsche Medien Scraper startet...")
     setup_database()
     scrape_all_feeds()
