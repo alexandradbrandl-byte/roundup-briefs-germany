@@ -483,6 +483,19 @@ def index():
     return send_from_directory(".", "index.html")
 
 
+def delete_old_articles():
+    """Delete articles older than 90 days to keep the database small."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    ph = "%s" if USE_POSTGRES else "?"
+    cutoff = (datetime.now() - timedelta(days=90)).isoformat()
+    cursor.execute(f"DELETE FROM articles WHERE scraped_at < {ph}", [cutoff])
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    print(f"Cleanup: deleted {deleted} articles older than 90 days.", flush=True)
+
+
 def startup():
     setup_database()
     setup_subscribers()
@@ -511,6 +524,13 @@ def startup():
         hour=8,
         minute=0,
         id='sunday_newsletter'
+    )
+    scheduler.add_job(
+        delete_old_articles,
+        'cron',
+        day_of_week='mon',
+        hour=3,
+        id='weekly_cleanup'
     )
     scheduler.start()
     print("Scheduler aktiv — scrapet alle 12h, Newsletter jeden Sonntag um 8 Uhr.")

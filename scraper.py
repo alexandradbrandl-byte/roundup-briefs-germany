@@ -11,7 +11,7 @@ import hashlib
 import re
 import os
 import requests as http_req
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import anthropic
 
 # ── Database setup ─────────────────────────────────────────────────────────────
@@ -700,6 +700,12 @@ def get_all_articles(category=None, source=None, search=None, topic=None,
 
     query  = "SELECT * FROM articles WHERE 1=1"
     params = []
+
+    # Hard cap: never return articles older than 90 days
+    if not time_range:
+        default_cutoff = (datetime.now() - timedelta(days=90)).isoformat()
+        query += f" AND scraped_at >= {ph}"
+        params.append(default_cutoff)
 
     if category:
         query += f" AND (category = {ph} OR tags LIKE {ph})"
