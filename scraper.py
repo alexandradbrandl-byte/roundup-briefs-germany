@@ -12,6 +12,7 @@ import re
 import os
 import requests as http_req
 from datetime import datetime, timezone
+import anthropic
 
 # ── Database setup ─────────────────────────────────────────────────────────────
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -517,6 +518,58 @@ def matches_keywords(title, summary):
     return any(kw in combined for kw in KEYWORDS)
 
 
+_anthropic_client = None
+
+def _get_anthropic_client():
+    global _anthropic_client
+    if _anthropic_client is None:
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if api_key:
+            _anthropic_client = anthropic.Anthropic(api_key=api_key)
+    return _anthropic_client
+
+
+def is_relevant_by_llm(title: str, summary: str) -> bool:
+    """Use Claude Haiku to check contextual relevance for intersectional feminism.
+    Falls back to keyword matching if API is unavailable."""
+    client = _get_anthropic_client()
+    if not client:
+        return matches_keywords(title, summary)
+
+    text = f"Title: {title}"
+    if summary:
+        text += f"\nSummary: {summary[:400]}"
+
+    try:
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=5,
+            system=(
+                "You are a strict content filter for a feminist news aggregator. "
+                "Reply only YES or NO."
+            ),
+            messages=[{
+                "role": "user",
+                "content": (
+                    "Is this news article genuinely relevant to intersectional feminism, "
+                    "women's rights, or LGBTQIA+ topics?\n\n"
+                    "Include: gender equality, reproductive rights, gender-based violence, "
+                    "feminist politics, LGBTQIA+ rights, sexism, discrimination against women, "
+                    "women in positions of power (when framed as a gender issue).\n\n"
+                    "Exclude: articles that only incidentally mention a woman or girl "
+                    "(e.g. a woman winning a cooking contest, a woman buying a house), "
+                    "general crime, sports results, business news unless directly about gender.\n\n"
+                    f"{text}\n\nAnswer YES or NO:"
+                ),
+            }],
+        )
+        answer = message.content[0].text.strip().upper()
+        return answer.startswith("YES")
+    except Exception as e:
+        print(f"    [LLM fallback] {e}", flush=True)
+        return matches_keywords(title, summary)
+
+
 def get_topics(text):
     text_lower = text.lower()
     matched = []
@@ -570,8 +623,13 @@ always_keep = source_name in ALWAYS_INCLUDE_SOURCES or country not in DACH
                 if language not in ("DE", "EN"):
                     title_for_matching = translate_to_german(title, language)
 
-                if not always_keep and not matches_keywords(title_for_matching, summary):
-                    continue
+                if not always_keep:
+                    # Fast pre-filter: skip if no keyword match at all
+                    if not matches_keywords(title_for_matching, summary):
+                        continue
+                    # Contextual filter: LLM decides if it's genuinely relevant
+                    if not is_relevant_by_llm(title_for_matching, summary):
+                        continue
 
                 # Use translated title for storage
                 stored_title = title_for_matching if language not in ("DE", "EN") else title
