@@ -7,6 +7,7 @@ import re
 import time
 import threading
 import hashlib
+import feedparser
 import requests as http_requests
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
@@ -35,6 +36,14 @@ TOPIC_META = {
     "Gewalt & Sicherheit":    {"icon": "🛡️", "color": "#F44336"},
     "Arbeit & Wirtschaft":    {"icon": "💼", "color": "#607D8B"},
 }
+
+# ── Curated feminist podcast RSS feeds ────────────────────────────────────────
+PODCAST_FEEDS = [
+    "https://fastandcurious.podigee.io/feed/mp3",
+    "https://feeds.simplecast.com/dXtUcfR7",
+    "https://feeds.acast.com/public/shows/6227944038a3690013989802",
+    "https://diepodcastin.de/feed/mp3/",
+]
 
 GERMAN_MONTHS = {
     1: "Januar", 2: "Februar", 3: "März", 4: "April",
@@ -469,6 +478,21 @@ def newsletter_send_now():
     return jsonify({"status": "Newsletter wird gesendet..."})
 
 
+@app.route("/api/podcasts")
+def podcasts_route():
+    conn = get_connection()
+    if USE_POSTGRES:
+        import psycopg2.extras
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    else:
+        conn.row_factory = __import__('sqlite3').Row
+        cursor = conn.cursor()
+    cursor.execute("SELECT * FROM podcasts ORDER BY id")
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+
 # ── Scrape ────────────────────────────────────────────────────────────────────
 
 @app.route("/api/scrape")
@@ -496,6 +520,134 @@ def delete_old_articles():
     conn.commit()
     conn.close()
     print(f"Cleanup: deleted {deleted} articles older than 90 days.", flush=True)
+
+
+def setup_podcasts_db():
+    conn = get_connection()
+    cursor = conn.cursor()
+    if USE_POSTGRES:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS podcasts (
+                id          SERIAL PRIMARY KEY,
+                feed_url    TEXT UNIQUE NOT NULL,
+                title       TEXT DEFAULT '',
+                description TEXT DEFAULT '',
+                cover_url   TEXT DEFAULT '',
+                website_url TEXT DEFAULT '',
+                latest_ep   TEXT DEFAULT '',
+                duration    TEXT DEFAULT '',
+                updated_at  TEXT DEFAULT ''
+            )
+        """)
+    else:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS podcasts (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                feed_url    TEXT UNIQUE NOT NULL,
+                title       TEXT DEFAULT '',
+                description TEXT DEFAULT '',
+                cover_url   TEXT DEFAULT '',
+                website_url TEXT DEFAULT '',
+                latest_ep   TEXT DEFAULT '',
+                duration    TEXT DEFAULT '',
+                updated_at  TEXT DEFAULT ''
+            )
+        """)
+    conn.commit()
+    conn.close()
+
+
+def _parse_duration(raw):
+    """Convert itunes:duration (HH:MM:SS or seconds) to '42 min' string."""
+    if not raw:
+        return ""
+    try:
+        parts = str(raw).split(":")
+        if len(parts) == 3:
+            total_min = int(parts[0]) * 60 + int(parts[1])
+        elif len(parts) == 2:
+            total_min = int(parts[0])
+        else:
+            total_min = int(raw) // 60
+        return f"{total_min} min"
+    except Exception:
+        return str(raw)
+
+
+def scrape_podcasts():
+    """Fetch each curated podcast RSS feed and upsert into the podcasts table."""
+    ph = "%s" if USE_POSTGRES else "?"
+    updated = 0
+
+    for feed_url in PODCAST_FEEDS:
+        try:
+            resp = http_requests.get(
+                feed_url, timeout=12,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; SharedGroundBot/1.0)"},
+            )
+            if not resp.ok:
+                print(f"Podcast feed {resp.status_code}: {feed_url}", flush=True)
+                continue
+
+            feed = feedparser.parse(resp.text)
+            f = feed.feed
+
+            title = f.get("title", "")
+            description = (
+                f.get("summary") or f.get("subtitle") or f.get("description") or ""
+            )[:300].strip()
+
+            # Cover image: try itunes:image then channel image
+            cover_url = ""
+            if hasattr(f, "image"):
+                cover_url = f.image.get("href") or f.image.get("url", "")
+            if not cover_url:
+                itunes_img = f.get("itunes_image", {})
+                cover_url = itunes_img.get("href", "") if isinstance(itunes_img, dict) else ""
+
+            website_url = f.get("link", "")
+
+            latest_ep = ""
+            duration = ""
+            if feed.entries:
+                ep = feed.entries[0]
+                latest_ep = ep.get("title", "")
+                duration = _parse_duration(ep.get("itunes_duration", ""))
+
+            conn = get_connection()
+            cur = conn.cursor()
+            if USE_POSTGRES:
+                cur.execute(f"""
+                    INSERT INTO podcasts
+                        (feed_url, title, description, cover_url, website_url, latest_ep, duration, updated_at)
+                    VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
+                    ON CONFLICT (feed_url) DO UPDATE SET
+                        title       = EXCLUDED.title,
+                        description = EXCLUDED.description,
+                        cover_url   = EXCLUDED.cover_url,
+                        website_url = EXCLUDED.website_url,
+                        latest_ep   = EXCLUDED.latest_ep,
+                        duration    = EXCLUDED.duration,
+                        updated_at  = EXCLUDED.updated_at
+                """, [feed_url, title, description, cover_url, website_url,
+                      latest_ep, duration, datetime.now().isoformat()])
+            else:
+                cur.execute(f"""
+                    INSERT OR REPLACE INTO podcasts
+                        (feed_url, title, description, cover_url, website_url, latest_ep, duration, updated_at)
+                    VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
+                """, [feed_url, title, description, cover_url, website_url,
+                      latest_ep, duration, datetime.now().isoformat()])
+            conn.commit()
+            conn.close()
+            updated += 1
+
+        except Exception as e:
+            print(f"Podcast scrape error ({feed_url}): {e}", flush=True)
+
+        time.sleep(1)
+
+    print(f"Podcast scrape done: {updated}/{len(PODCAST_FEEDS)} updated.", flush=True)
 
 
 def enrich_images_batch(batch_size=15):
@@ -555,6 +707,7 @@ def enrich_images_batch(batch_size=15):
 def startup():
     setup_database()
     setup_subscribers()
+    setup_podcasts_db()
 
     def initial_scrape():
         try:
@@ -566,6 +719,8 @@ def startup():
 
     thread = threading.Thread(target=initial_scrape)
     thread.start()
+
+    threading.Thread(target=scrape_podcasts).start()
 
     scheduler = BackgroundScheduler()
     scheduler.add_job(
@@ -593,6 +748,12 @@ def startup():
         'interval',
         minutes=30,
         id='image_enrichment'
+    )
+    scheduler.add_job(
+        scrape_podcasts,
+        'interval',
+        hours=24,
+        id='podcast_scrape'
     )
     scheduler.start()
     print("Scheduler aktiv — scrapet alle 12h, Newsletter jeden Sonntag um 8 Uhr, Bilder-Anreicherung alle 30 Min.")
