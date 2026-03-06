@@ -236,11 +236,15 @@ def setup_database():
                 tags         TEXT,
                 topics       TEXT    DEFAULT '',
                 scraped_at   TEXT,
-                published_at TEXT    DEFAULT ''
+                published_at TEXT    DEFAULT '',
+                image_url    TEXT    DEFAULT ''
             )
         """)
         cursor.execute("""
             ALTER TABLE articles ADD COLUMN IF NOT EXISTS published_at TEXT DEFAULT ''
+        """)
+        cursor.execute("""
+            ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_url TEXT DEFAULT ''
         """)
     else:
         cursor.execute("""
@@ -256,11 +260,16 @@ def setup_database():
                 tags         TEXT,
                 topics       TEXT    DEFAULT '',
                 scraped_at   TEXT,
-                published_at TEXT    DEFAULT ''
+                published_at TEXT    DEFAULT '',
+                image_url    TEXT    DEFAULT ''
             )
         """)
         try:
             cursor.execute("ALTER TABLE articles ADD COLUMN published_at TEXT DEFAULT ''")
+        except Exception:
+            pass
+        try:
+            cursor.execute("ALTER TABLE articles ADD COLUMN image_url TEXT DEFAULT ''")
         except Exception:
             pass
     conn.commit()
@@ -347,6 +356,31 @@ def scrape_all_feeds():
                 summary = strip_html(entry.get("summary", ""))
                 hash_id = url_hash(link)
 
+                # Extract image URL from RSS entry (no extra HTTP requests)
+                image_url = ""
+                for mc in getattr(entry, "media_content", []) or []:
+                    url = mc.get("url", "")
+                    if url and (mc.get("medium") == "image" or
+                                any(ext in url.lower() for ext in [".jpg", ".jpeg", ".png", ".webp", ".gif"])):
+                        image_url = url
+                        break
+                if not image_url:
+                    for th in getattr(entry, "media_thumbnail", []) or []:
+                        image_url = th.get("url", "")
+                        if image_url:
+                            break
+                if not image_url:
+                    for enc in getattr(entry, "enclosures", []) or []:
+                        if enc.get("type", "").startswith("image/"):
+                            image_url = enc.get("href", enc.get("url", ""))
+                            if image_url:
+                                break
+                if not image_url:
+                    raw_content = entry.get("content", [{}])[0].get("value", "") if entry.get("content") else ""
+                    img_match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', raw_content or entry.get("summary", ""))
+                    if img_match:
+                        image_url = img_match.group(1)
+
                 pub_parsed = entry.get("published_parsed") or entry.get("updated_parsed")
                 if pub_parsed:
                     try:
@@ -389,23 +423,23 @@ always_keep = source_name in ALWAYS_INCLUDE_SOURCES or country not in DACH
                         cursor.execute(f"""
                             INSERT INTO articles
                               (url_hash, title, link, summary, source, country,
-                               category, tags, topics, scraped_at, published_at)
-                            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
+                               category, tags, topics, scraped_at, published_at, image_url)
+                            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
                             ON CONFLICT (url_hash) DO NOTHING
                         """, (hash_id, stored_title, link, summary, source_name, country,
                               category, tags_str, topics_str, datetime.now().isoformat(),
-                              published_at))
+                              published_at, image_url))
                         if cursor.rowcount > 0:
                             new_count += 1
                     else:
                         cursor.execute(f"""
                             INSERT OR IGNORE INTO articles
                               (url_hash, title, link, summary, source, country,
-                               category, tags, topics, scraped_at, published_at)
-                            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
+                               category, tags, topics, scraped_at, published_at, image_url)
+                            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
                         """, (hash_id, stored_title, link, summary, source_name, country,
                               category, tags_str, topics_str, datetime.now().isoformat(),
-                              published_at))
+                              published_at, image_url))
                         if cursor.rowcount > 0:
                             new_count += 1
                 except Exception:
