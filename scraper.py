@@ -425,7 +425,10 @@ def scrape_all_feeds():
                               (url_hash, title, link, summary, source, country,
                                category, tags, topics, scraped_at, published_at, image_url)
                             VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
-                            ON CONFLICT (url_hash) DO NOTHING
+                            ON CONFLICT (url_hash) DO UPDATE
+                              SET image_url = EXCLUDED.image_url
+                              WHERE (articles.image_url IS NULL OR articles.image_url = '')
+                                AND EXCLUDED.image_url != ''
                         """, (hash_id, stored_title, link, summary, source_name, country,
                               category, tags_str, topics_str, datetime.now().isoformat(),
                               published_at, image_url))
