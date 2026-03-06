@@ -321,12 +321,16 @@ def matches_keywords(title, summary):
 
 
 def get_topics(text):
+    """Return topics ordered by keyword-match count (most relevant first)."""
     text_lower = text.lower()
-    matched = []
+    scored = []
     for topic_name, keywords in TOPIC_KEYWORDS.items():
-        if any(kw in text_lower for kw in keywords):
-            matched.append(topic_name)
-    return matched
+        count = sum(1 for kw in keywords if kw in text_lower)
+        if count > 0:
+            scored.append((count, topic_name))
+    # Sort descending by score so first topic = most relevant
+    scored.sort(key=lambda x: -x[0])
+    return [name for _, name in scored]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -415,8 +419,12 @@ def scrape_all_feeds():
 
                 topics = get_topics(title_for_matching + " " + summary)
                 if source_name in {"queer.de", "L-MAG"}:
-                    topics = list(set(topics + ["LGBTQIA+"]))
-                topics_str = ", ".join(sorted(set(topics))) if topics else ""
+                    # Ensure LGBTQIA+ is first (highest priority for these sources)
+                    topics = ["LGBTQIA+"] + [t for t in topics if t != "LGBTQIA+"]
+                # Preserve relevance order — do NOT sort alphabetically
+                seen = set()
+                unique_topics = [t for t in topics if not (t in seen or seen.add(t))]
+                topics_str = ", ".join(unique_topics) if unique_topics else ""
 
                 try:
                     if USE_POSTGRES:
@@ -426,9 +434,13 @@ def scrape_all_feeds():
                                category, tags, topics, scraped_at, published_at, image_url)
                             VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph})
                             ON CONFLICT (url_hash) DO UPDATE
-                              SET image_url = EXCLUDED.image_url
-                              WHERE (articles.image_url IS NULL OR articles.image_url = '')
-                                AND EXCLUDED.image_url != ''
+                              SET topics    = EXCLUDED.topics,
+                                  image_url = CASE
+                                    WHEN (articles.image_url IS NULL OR articles.image_url = '')
+                                         AND EXCLUDED.image_url != ''
+                                    THEN EXCLUDED.image_url
+                                    ELSE articles.image_url
+                                  END
                         """, (hash_id, stored_title, link, summary, source_name, country,
                               category, tags_str, topics_str, datetime.now().isoformat(),
                               published_at, image_url))
