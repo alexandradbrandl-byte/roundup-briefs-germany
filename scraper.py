@@ -391,7 +391,7 @@ def scrape_all_feeds():
                     published_at = datetime.now().isoformat()
 
                 DACH = {"Germany", "Austria", "Switzerland"}
-always_keep = source_name in ALWAYS_INCLUDE_SOURCES or country not in DACH
+                always_keep = source_name in ALWAYS_INCLUDE_SOURCES or country not in DACH
 
                 # Translate title for keyword matching (non-DE/EN sources)
                 title_for_matching = title
