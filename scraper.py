@@ -213,7 +213,7 @@ TOPIC_KEYWORDS = {
     ],
 }
 
-MAX_ARTICLES_PER_SOURCE = 30
+MAX_ARTICLES_PER_SOURCE = 50
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -516,7 +516,8 @@ def get_all_articles(category=None, source=None, search=None, topic=None,
         query += f" AND scraped_at <= {ph}"
         params.append(date_to + "T23:59:59")
 
-    query += f" ORDER BY scraped_at DESC LIMIT {ph}"
+    # Sort by publication date (falling back to scrape date when published_at is absent)
+    query += f" ORDER BY COALESCE(NULLIF(published_at, ''), scraped_at) DESC LIMIT {ph}"
     params.append(limit)
 
     cursor.execute(query, params)
