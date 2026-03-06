@@ -11,8 +11,7 @@ import hashlib
 import re
 import os
 import requests as http_req
-from datetime import datetime, timezone, timedelta
-import anthropic
+from datetime import datetime, timezone
 
 # ── Database setup ─────────────────────────────────────────────────────────────
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -95,11 +94,11 @@ FEEDS = {
     "News AT":              {"url": "https://www.news.at/rss",                                         "country": "Austria",       "language": "DE"},
     "Moment AT":            {"url": "https://moment.at/feed/",                                         "country": "Austria",       "language": "DE"},
     "Vienna AT":            {"url": "https://www.vienna.at/feed",                                      "country": "Austria",       "language": "DE"},
-    "Wienerin":             {"url": "https://www.wienerin.at/feed",                                    "country": "Austria",       "language": "DE"},
+    "Trend AT":             {"url": "https://www.trend.at/rss",                                        "country": "Austria",       "language": "DE"},
     "Wiener Zeitung":       {"url": "https://www.wienerzeitung.at/rss",                                "country": "Austria",       "language": "DE"},
     "APA OTS":              {"url": "https://www.ots.at/rss",                                          "country": "Austria",       "language": "DE"},
 
-    # ── Schweiz ───────────────────────────────────────────────────────────────
+    # ── Schweiz (deutschsprachig) ─────────────────────────────────────────────
     "NZZ":                  {"url": "https://www.nzz.ch/recent.rss",                                   "country": "Switzerland",   "language": "DE"},
     "SRF News":             {"url": "https://www.srf.ch/news/bnf/rss/1890",                            "country": "Switzerland",   "language": "DE"},
     "Tages-Anzeiger":       {"url": "https://www.tagesanzeiger.ch/rss",                                "country": "Switzerland",   "language": "DE"},
@@ -109,187 +108,12 @@ FEEDS = {
     "Aargauer Zeitung":     {"url": "https://www.aargauerzeitung.ch/rss",                              "country": "Switzerland",   "language": "DE"},
     "Basler Zeitung":       {"url": "https://www.bazonline.ch/rss",                                    "country": "Switzerland",   "language": "DE"},
     "Der Bund CH":          {"url": "https://www.derbund.ch/rss",                                      "country": "Switzerland",   "language": "DE"},
-    "RTS Info":             {"url": "https://www.rts.ch/info/rss",                                     "country": "Switzerland",   "language": "FR"},
-    "Le Temps":             {"url": "https://www.letemps.ch/rss.xml",                                  "country": "Switzerland",   "language": "FR"},
-    "Tribune de Geneve":    {"url": "https://www.tdg.ch/rss",                                          "country": "Switzerland",   "language": "FR"},
-    "Swissinfo EN":         {"url": "https://www.swissinfo.ch/eng/rss",                                "country": "Switzerland",   "language": "EN"},
     "Infosperber CH":       {"url": "https://www.infosperber.ch/feed",                                 "country": "Switzerland",   "language": "DE"},
     "Republik CH":          {"url": "https://www.republik.ch/rss",                                     "country": "Switzerland",   "language": "DE"},
-
-    # ── Spanien ───────────────────────────────────────────────────────────────
-    "El Pais":              {"url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada", "country": "Spain",        "language": "ES"},
-    "El Mundo":             {"url": "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml",             "country": "Spain",        "language": "ES"},
-    "La Vanguardia":        {"url": "https://www.lavanguardia.com/rss/home.xml",                        "country": "Spain",        "language": "ES"},
-    "El Confidencial":      {"url": "https://rss.elconfidencial.com/espana/",                           "country": "Spain",        "language": "ES"},
-    "elDiario.es":          {"url": "https://www.eldiario.es/rss/",                                     "country": "Spain",        "language": "ES"},
-    "20minutos ES":         {"url": "https://www.20minutos.es/rss/",                                    "country": "Spain",        "language": "ES"},
-    "Publico ES":           {"url": "https://www.publico.es/rss",                                       "country": "Spain",        "language": "ES"},
-    "El Periodico":         {"url": "https://www.elperiodico.com/es/rss/rss_portada.xml",               "country": "Spain",        "language": "ES"},
-    "RTVE Noticias":        {"url": "https://www.rtve.es/api/noticias.rss",                             "country": "Spain",        "language": "ES"},
-    "El Espanol":           {"url": "https://www.elespanol.com/rss/",                                   "country": "Spain",        "language": "ES"},
-    "Cadena SER":           {"url": "https://cadenaser.com/feed/",                                      "country": "Spain",        "language": "ES"},
-    "infoLibre":            {"url": "https://www.infolibre.es/rss",                                     "country": "Spain",        "language": "ES"},
-    "ABC Espana":           {"url": "https://www.abc.es/rss/feeds/abc_ultima_hora.xml",                 "country": "Spain",        "language": "ES"},
-    "El Huffpost ES":       {"url": "https://www.huffingtonpost.es/feeds/index.xml",                    "country": "Spain",        "language": "ES"},
-    "Mujeres en Red":       {"url": "https://www.mujeresenred.net/spip.php?page=backend",               "country": "Spain",        "language": "ES"},
-
-    # ── Italien ───────────────────────────────────────────────────────────────
-    "La Repubblica":        {"url": "https://www.repubblica.it/rss/homepage/rss2.0.xml",               "country": "Italy",        "language": "IT"},
-    "Corriere della Sera":  {"url": "https://www.corriere.it/rss/homepage.xml",                         "country": "Italy",        "language": "IT"},
-    "ANSA":                 {"url": "https://www.ansa.it/sito/notizie/cronaca/cronaca_rss.xml",         "country": "Italy",        "language": "IT"},
-    "Il Fatto Quotidiano":  {"url": "https://www.ilfattoquotidiano.it/feed/",                           "country": "Italy",        "language": "IT"},
-    "Il Sole 24 Ore":       {"url": "https://www.ilsole24ore.com/rss/italia--mondo.xml",               "country": "Italy",        "language": "IT"},
-    "HuffPost Italia":      {"url": "https://www.huffingtonpost.it/feeds/index.xml",                    "country": "Italy",        "language": "IT"},
-    "TGcom24":              {"url": "https://www.tgcom24.mediaset.it/rss/cronaca.xml",                  "country": "Italy",        "language": "IT"},
-    "Sky TG24":             {"url": "https://tg24.sky.it/rss/tg24.xml",                                "country": "Italy",        "language": "IT"},
-    "Fanpage IT":           {"url": "https://www.fanpage.it/feed/",                                     "country": "Italy",        "language": "IT"},
-    "Open Online":          {"url": "https://www.open.online/feed/",                                    "country": "Italy",        "language": "IT"},
-    "Il Manifesto":         {"url": "https://ilmanifesto.it/feed",                                      "country": "Italy",        "language": "IT"},
-    "Internazionale":       {"url": "https://www.internazionale.it/sito/rss",                           "country": "Italy",        "language": "IT"},
-    "AGI":                  {"url": "https://www.agi.it/feed/",                                         "country": "Italy",        "language": "IT"},
-    "Rainews":              {"url": "https://www.rainews.it/dl/RaiTV/iphone/rss/rainews/rainews24.xml", "country": "Italy",        "language": "IT"},
-    "La Stampa":            {"url": "https://www.lastampa.it/rss.xml",                                  "country": "Italy",        "language": "IT"},
-
-    # ── USA ───────────────────────────────────────────────────────────────────
-    "NPR":                  {"url": "https://feeds.npr.org/1001/rss.xml",                               "country": "United States", "language": "EN"},
-    "Reuters":              {"url": "https://feeds.reuters.com/reuters/topNews",                        "country": "United States", "language": "EN"},
-    "The Guardian US":      {"url": "https://www.theguardian.com/us/rss",                               "country": "United States", "language": "EN"},
-    "New York Times":       {"url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",        "country": "United States", "language": "EN"},
-    "CNN":                  {"url": "http://rss.cnn.com/rss/cnn_topstories.rss",                        "country": "United States", "language": "EN"},
-    "NBC News":             {"url": "https://feeds.nbcnews.com/nbcnews/public/news",                    "country": "United States", "language": "EN"},
-    "CBS News":             {"url": "https://www.cbsnews.com/latest/rss/main",                          "country": "United States", "language": "EN"},
-    "ABC News US":          {"url": "https://abcnews.go.com/abcnews/topstories",                        "country": "United States", "language": "EN"},
-    "Vox":                  {"url": "https://www.vox.com/rss/index.xml",                                "country": "United States", "language": "EN"},
-    "The Atlantic":         {"url": "https://www.theatlantic.com/feed/all/",                            "country": "United States", "language": "EN"},
-    "Politico":             {"url": "https://www.politico.com/rss/politicopicks.xml",                   "country": "United States", "language": "EN"},
-    "Ms. Magazine":         {"url": "https://msmagazine.com/feed/",                                     "country": "United States", "language": "EN"},
-    "Human Rights Watch":   {"url": "https://www.hrw.org/rss.xml",                                     "country": "United States", "language": "EN"},
-    "ACLU News":            {"url": "https://www.aclu.org/taxonomy/term/10296/feed",                    "country": "United States", "language": "EN"},
-    "Teen Vogue":           {"url": "https://www.teenvogue.com/feed/rss",                               "country": "United States", "language": "EN"},
-
-    # ── China ─────────────────────────────────────────────────────────────────
-    "CGTN":                 {"url": "https://www.cgtn.com/subscribe/rss/section/world.xml",             "country": "China",        "language": "EN"},
-    "Global Times":         {"url": "https://www.globaltimes.cn/rss/outbrain.xml",                      "country": "China",        "language": "EN"},
-    "South China Morning Post": {"url": "https://www.scmp.com/rss/91/feed",                            "country": "China",        "language": "EN"},
-    "China Daily":          {"url": "https://www.chinadaily.com.cn/rss/cndy_rss.xml",                   "country": "China",        "language": "EN"},
-    "Sixth Tone":           {"url": "https://www.sixthtone.com/feeds/latest_stories",                   "country": "China",        "language": "EN"},
-    "ChinaFile":            {"url": "https://www.chinafile.com/rss.xml",                                "country": "China",        "language": "EN"},
-    "What's on Weibo":      {"url": "https://www.whatsonweibo.com/feed/",                               "country": "China",        "language": "EN"},
-    "Radii China":          {"url": "https://radiichina.com/feed/",                                     "country": "China",        "language": "EN"},
-    "Hong Kong Free Press": {"url": "https://hongkongfp.com/feed/",                                     "country": "China",        "language": "EN"},
-    "Taiwan News":          {"url": "https://www.taiwannews.com.tw/en/feed",                            "country": "China",        "language": "EN"},
-    "Caixin Global":        {"url": "https://www.caixinglobal.com/feeds.rss",                           "country": "China",        "language": "EN"},
-    "Xinhua English":       {"url": "http://www.xinhuanet.com/english/rss/worldrss.xml",                "country": "China",        "language": "EN"},
-    "People's Daily EN":    {"url": "http://en.people.cn/rss/90001.xml",                                "country": "China",        "language": "EN"},
-    "SupChina":             {"url": "https://supchina.com/feed/",                                       "country": "China",        "language": "EN"},
-    "China Digital Times":  {"url": "https://chinadigitaltimes.net/feed/",                              "country": "China",        "language": "EN"},
-
-    # ── Uganda ────────────────────────────────────────────────────────────────
-    "Daily Monitor UG":     {"url": "https://www.monitor.co.ug/uganda/feed",                            "country": "Uganda",       "language": "EN"},
-    "New Vision UG":        {"url": "https://www.newvision.co.ug/rss",                                  "country": "Uganda",       "language": "EN"},
-    "Observer Uganda":      {"url": "https://observer.ug/feed",                                         "country": "Uganda",       "language": "EN"},
-    "Nile Post":            {"url": "https://nilepost.co.ug/feed/",                                     "country": "Uganda",       "language": "EN"},
-    "Chimp Reports":        {"url": "https://chimpreports.com/feed/",                                   "country": "Uganda",       "language": "EN"},
-    "The Independent UG":   {"url": "https://www.independent.co.ug/feed/",                              "country": "Uganda",       "language": "EN"},
-    "Softpower Uganda":     {"url": "https://softpowerug.com/feed/",                                    "country": "Uganda",       "language": "EN"},
-    "URN Uganda":           {"url": "https://ugandaradionetwork.net/feed",                               "country": "Uganda",       "language": "EN"},
-    "Kampala Post":         {"url": "https://www.kampalapost.com/feed",                                 "country": "Uganda",       "language": "EN"},
-    "African Arguments UG": {"url": "https://africanarguments.org/feed/",                               "country": "Uganda",       "language": "EN"},
-    "Bukedde":              {"url": "https://bukedde.co.ug/feed/",                                      "country": "Uganda",       "language": "EN"},
-    "NTV Uganda":           {"url": "https://www.ntvuganda.co.ug/feeds",                                "country": "Uganda",       "language": "EN"},
-    "Kool FM Uganda":       {"url": "https://kfm.co.ug/feed/",                                          "country": "Uganda",       "language": "EN"},
-    "Eagle Online UG":      {"url": "https://www.eagleonline.co.ug/feed/",                              "country": "Uganda",       "language": "EN"},
-    "The Tower Post UG":    {"url": "https://thetowerpost.com/feed/",                                   "country": "Uganda",       "language": "EN"},
-
-    # ── Finnland ──────────────────────────────────────────────────────────────
-    "Yle News EN":          {"url": "https://feeds.yle.fi/uutiset/v1/recent.rss?publisherIds=YLE_NEWS", "country": "Finland",      "language": "EN"},
-    "Yle Uutiset FI":       {"url": "https://feeds.yle.fi/uutiset/v1/majorHeadlines/YLE_UUTISET.rss",   "country": "Finland",      "language": "FI"},
-    "Helsingin Sanomat":    {"url": "https://www.hs.fi/rss/tuoreimmat.xml",                              "country": "Finland",      "language": "FI"},
-    "Iltalehti":            {"url": "https://www.iltalehti.fi/rss/uutiset.xml",                         "country": "Finland",      "language": "FI"},
-    "Ilta-Sanomat":         {"url": "https://www.is.fi/rss/tuoreimmat.xml",                             "country": "Finland",      "language": "FI"},
-    "MTV Uutiset":          {"url": "https://www.mtvuutiset.fi/rss/uutiset.xml",                        "country": "Finland",      "language": "FI"},
-    "Kauppalehti":          {"url": "https://feeds.kauppalehti.fi/rss/main",                            "country": "Finland",      "language": "FI"},
-    "Uusi Suomi":           {"url": "https://www.uusisuomi.fi/feed",                                    "country": "Finland",      "language": "FI"},
-    "Aamulehti":            {"url": "https://www.aamulehti.fi/rss.xml",                                 "country": "Finland",      "language": "FI"},
-    "Turun Sanomat":        {"url": "https://www.ts.fi/rss",                                            "country": "Finland",      "language": "FI"},
-    "Vihrea Lanka":         {"url": "https://www.vihrealanka.fi/feed",                                  "country": "Finland",      "language": "FI"},
-    "Maaseudun Tulevaisuus":{"url": "https://www.maaseuduntulevaisuus.fi/rss.xml",                      "country": "Finland",      "language": "FI"},
-    "Savon Sanomat":        {"url": "https://www.savonsanomat.fi/rss.xml",                              "country": "Finland",      "language": "FI"},
-    "Kaleva FI":            {"url": "https://www.kaleva.fi/rss.xml",                                    "country": "Finland",      "language": "FI"},
-    "Taloussanomat":        {"url": "https://www.is.fi/taloussanomat/rss.xml",                          "country": "Finland",      "language": "FI"},
-
-    # ── Türkei ────────────────────────────────────────────────────────────────
-    "Hurriyet Daily News":  {"url": "https://www.hurriyetdailynews.com/rss.aspx",                       "country": "Turkey",       "language": "EN"},
-    "Daily Sabah":          {"url": "https://www.dailysabah.com/rssFeed/turkey",                        "country": "Turkey",       "language": "EN"},
-    "Bianet EN":            {"url": "https://bianet.org/english/rss",                                   "country": "Turkey",       "language": "EN"},
-    "Anadolu Agency EN":    {"url": "https://www.aa.com.tr/en/rss/default?cat=trending",                "country": "Turkey",       "language": "EN"},
-    "Cumhuriyet":           {"url": "https://www.cumhuriyet.com.tr/rss/son_dakika.xml",                 "country": "Turkey",       "language": "TR"},
-    "Hurriyet TR":          {"url": "https://www.hurriyet.com.tr/rss/anasayfa",                         "country": "Turkey",       "language": "TR"},
-    "Milliyet":             {"url": "https://www.milliyet.com.tr/rss/rssNew/GuncelRss.xml",             "country": "Turkey",       "language": "TR"},
-    "Sabah TR":             {"url": "https://www.sabah.com.tr/rss/anasayfa.xml",                        "country": "Turkey",       "language": "TR"},
-    "BirGun":               {"url": "https://www.birgun.net/feed",                                      "country": "Turkey",       "language": "TR"},
-    "Gazete Duvar":         {"url": "https://www.gazeteduvar.com.tr/feed",                              "country": "Turkey",       "language": "TR"},
-    "T24 TR":               {"url": "https://t24.com.tr/rss",                                           "country": "Turkey",       "language": "TR"},
-    "Sozcu":                {"url": "https://www.sozcu.com.tr/rss.xml",                                 "country": "Turkey",       "language": "TR"},
-    "Haberturk":            {"url": "https://www.haberturk.com/rss",                                    "country": "Turkey",       "language": "TR"},
-    "Bianet TR":            {"url": "https://bianet.org/feeds/genel.rss",                               "country": "Turkey",       "language": "TR"},
-    "Karar TR":             {"url": "https://www.karar.com/rss.xml",                                    "country": "Turkey",       "language": "TR"},
-
-    # ── Iran ──────────────────────────────────────────────────────────────────
-    "Tehran Times":         {"url": "https://www.tehrantimes.com/rss",                                  "country": "Iran",         "language": "EN"},
-    "Iran International":   {"url": "https://www.iranintl.com/en/rss",                                  "country": "Iran",         "language": "EN"},
-    "IranWire":             {"url": "https://iranwire.com/en/feed",                                     "country": "Iran",         "language": "EN"},
-    "IRNA English":         {"url": "https://en.irna.ir/rss",                                           "country": "Iran",         "language": "EN"},
-    "Press TV":             {"url": "https://www.presstv.ir/rssFeed/1.xml",                             "country": "Iran",         "language": "EN"},
-    "Financial Tribune":    {"url": "https://financialtribune.com/rss",                                 "country": "Iran",         "language": "EN"},
-    "Iran Front Page":      {"url": "https://ifpnews.com/feed/",                                        "country": "Iran",         "language": "EN"},
-    "Kayhan London":        {"url": "https://kayhan.london/feed/",                                      "country": "Iran",         "language": "EN"},
-    "Iran Human Rights":    {"url": "https://iranhr.net/en/feed/",                                      "country": "Iran",         "language": "EN"},
-    "Radio Farda EN":       {"url": "https://en.radiofarda.com/api/epiqq",                              "country": "Iran",         "language": "EN"},
-    "BBC Persian":          {"url": "https://www.bbc.com/persian/rss.xml",                              "country": "Iran",         "language": "FA"},
-    "VOA Persian":          {"url": "https://www.radiofarda.com/api/zmoqmemyqu",                        "country": "Iran",         "language": "FA"},
-    "Manoto News":          {"url": "https://www.manototv.com/news/rss",                                "country": "Iran",         "language": "FA"},
-    "Iran Wire FA":         {"url": "https://iranwire.com/fa/feed",                                     "country": "Iran",         "language": "FA"},
-    "Zan Iran":             {"url": "https://zaniiran.com/feed/",                                       "country": "Iran",         "language": "FA"},
-
-    # ── Südafrika ─────────────────────────────────────────────────────────────
-    "Mail and Guardian":    {"url": "https://mg.co.za/feed/",                                           "country": "South Africa", "language": "EN"},
-    "Daily Maverick":       {"url": "https://www.dailymaverick.co.za/feed/",                            "country": "South Africa", "language": "EN"},
-    "TimesLive":            {"url": "https://www.timeslive.co.za/rss/",                                 "country": "South Africa", "language": "EN"},
-    "News24":               {"url": "https://feeds.news24.com/articles/news24/TopStories/rss",          "country": "South Africa", "language": "EN"},
-    "The Citizen ZA":       {"url": "https://citizen.co.za/feed/",                                     "country": "South Africa", "language": "EN"},
-    "IOL ZA":               {"url": "https://www.iol.co.za/rss",                                       "country": "South Africa", "language": "EN"},
-    "GroundUp":             {"url": "https://www.groundup.org.za/feed/",                                "country": "South Africa", "language": "EN"},
-    "Bhekisisa":            {"url": "https://bhekisisa.org/feed/",                                      "country": "South Africa", "language": "EN"},
-    "Eyewitness News":      {"url": "https://ewn.co.za/Feed/latest",                                    "country": "South Africa", "language": "EN"},
-    "Maverick Citizen":     {"url": "https://www.dailymaverick.co.za/maverickcitizen/feed/",            "country": "South Africa", "language": "EN"},
-    "The South African":    {"url": "https://www.thesouthafrican.com/feed/",                            "country": "South Africa", "language": "EN"},
-    "Business Day ZA":      {"url": "https://businesslive.co.za/rss/bd/",                               "country": "South Africa", "language": "EN"},
-    "African Arguments ZA": {"url": "https://africanarguments.org/feed/",                               "country": "South Africa", "language": "EN"},
-    "Daily Sun ZA":         {"url": "https://www.dailysun.co.za/rss.xml",                               "country": "South Africa", "language": "EN"},
-    "Feminist SA":          {"url": "https://www.feministsa.org/feed/",                                 "country": "South Africa", "language": "EN"},
-
-    # ── Indien ────────────────────────────────────────────────────────────────
-    "The Hindu":            {"url": "https://www.thehindu.com/feeder/default.rss",                      "country": "India",        "language": "EN"},
-    "Times of India":       {"url": "https://timesofindia.indiatimes.com/rss.cms",                      "country": "India",        "language": "EN"},
-    "NDTV":                 {"url": "https://feeds.feedburner.com/ndtvnews-india-news",                  "country": "India",        "language": "EN"},
-    "Indian Express":       {"url": "https://indianexpress.com/feed/",                                  "country": "India",        "language": "EN"},
-    "Hindustan Times":      {"url": "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml",  "country": "India",        "language": "EN"},
-    "The Wire IN":          {"url": "https://thewire.in/feed",                                          "country": "India",        "language": "EN"},
-    "Scroll.in":            {"url": "https://scroll.in/feed",                                           "country": "India",        "language": "EN"},
-    "The Print":            {"url": "https://theprint.in/feed/",                                        "country": "India",        "language": "EN"},
-    "Feminism in India":    {"url": "https://feminisminindia.com/feed/",                                "country": "India",        "language": "EN"},
-    "LiveMint":             {"url": "https://www.livemint.com/rss/news",                                "country": "India",        "language": "EN"},
-    "The Quint":            {"url": "https://www.thequint.com/feeds/home",                              "country": "India",        "language": "EN"},
-    "Outlook India":        {"url": "https://www.outlookindia.com/rss/main/magazine",                   "country": "India",        "language": "EN"},
-    "News Laundry":         {"url": "https://www.newslaundry.com/feed",                                 "country": "India",        "language": "EN"},
-    "The Caravan IN":       {"url": "https://caravanmagazine.in/feed",                                  "country": "India",        "language": "EN"},
-    "Tribune India":        {"url": "https://www.tribuneindia.com/rss/feed.xml",                        "country": "India",        "language": "EN"},
 }
 
 ALWAYS_INCLUDE_SOURCES = {
     "EMMA", "queer.de", "L-MAG",
-    "Ms. Magazine", "Feminism in India", "Feminist SA",
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -307,44 +131,13 @@ KEYWORDS = [
     "geschlechtergleichheit", "patriarchat", "frauenbewegung",
     "menstruation", "verhuetung", "mutterschaft", "elternzeit",
     "care-arbeit", "glaeserne decke", "frauenquote",
-    # Englisch
-    "women", "woman", "girl", "girls", "female", "feminism", "feminist",
-    "gender equality", "gender gap", "gender pay gap", "equal pay",
-    "reproductive rights", "abortion", "women's rights", "sexism", "misogyny",
-    "domestic violence", "gender violence", "femicide",
-    "sexual harassment", "sexual assault", "rape", "metoo", "me too",
-    "lgbt", "lgbtq", "lgbtqia", "queer", "gay", "lesbian", "bisexual",
-    "transgender", "trans ", "nonbinary", "non-binary", "intersex",
-    "pride", "same-sex", "gay rights", "trans rights",
-    "homophobia", "transphobia", "conversion therapy",
-    "immigration", "refugee", "asylum", "migrant",
-    "human rights", "civil rights", "discrimination", "racism",
-    "maternal", "pregnancy", "contraception", "menstruation",
-    "gender-based violence", "honor killing", "child marriage",
-    "girls education", "women empowerment",
-    # Spanisch
-    "mujeres", "mujer", "feminismo", "feminista", "igualdad de genero",
-    "aborto", "violencia de genero", "acoso sexual",
-    "lesbiana", "transgenero", "orgullo", "derechos de la mujer",
-    "discriminacion", "refugiada", "migrante",
-    # Italienisch
-    "donne", "donna", "femminismo", "femminista", "parita di genere",
-    "violenza di genere", "molestie sessuali",
-    "lesbica", "transgender", "orgoglio", "diritti delle donne",
-    "discriminazione", "rifugiata",
-    # Finnisch
-    "naiset", "nainen", "feminismi", "tasa-arvo",
-    "sukupuolisyrjinta", "lgbtq", "lesbo", "transsukupuolinen",
-    "ylpeys", "naisten oikeudet", "syrjinta", "pakolainen",
-    # Türkisch
-    "kadin", "kadinlar", "feminizm", "feminist",
-    "toplumsal cinsiyet", "kurtaj", "cinsel taciz",
-    "lezbiyen", "onur", "kadin haklari", "ayrimcilik", "multeci",
-    # Französisch (für CH)
-    "femmes", "feminisme", "feministe", "egalite des genres",
-    "avortement", "violence conjugale", "harcelement sexuel",
-    "lesbienne", "transgenre", "fierte", "droits des femmes",
-    "discrimination", "refugiee", "migrant",
+    # Englisch (internationale Begriffe auch in deutschsprachigen Medien)
+    "women", "woman", "feminist", "feminism", "gender",
+    "reproductive rights", "abortion", "sexism", "misogyny",
+    "domestic violence", "femicide", "sexual harassment", "metoo",
+    "lgbt", "lgbtq", "lgbtqia", "queer", "gay", "lesbian",
+    "transgender", "nonbinary", "non-binary", "pride",
+    "human rights", "discrimination",
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -518,58 +311,6 @@ def matches_keywords(title, summary):
     return any(kw in combined for kw in KEYWORDS)
 
 
-_anthropic_client = None
-
-def _get_anthropic_client():
-    global _anthropic_client
-    if _anthropic_client is None:
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
-        if api_key:
-            _anthropic_client = anthropic.Anthropic(api_key=api_key)
-    return _anthropic_client
-
-
-def is_relevant_by_llm(title: str, summary: str) -> bool:
-    """Use Claude Haiku to check contextual relevance for intersectional feminism.
-    Falls back to keyword matching if API is unavailable."""
-    client = _get_anthropic_client()
-    if not client:
-        return matches_keywords(title, summary)
-
-    text = f"Title: {title}"
-    if summary:
-        text += f"\nSummary: {summary[:400]}"
-
-    try:
-        message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=5,
-            system=(
-                "You are a strict content filter for a feminist news aggregator. "
-                "Reply only YES or NO."
-            ),
-            messages=[{
-                "role": "user",
-                "content": (
-                    "Is this news article genuinely relevant to intersectional feminism, "
-                    "women's rights, or LGBTQIA+ topics?\n\n"
-                    "Include: gender equality, reproductive rights, gender-based violence, "
-                    "feminist politics, LGBTQIA+ rights, sexism, discrimination against women, "
-                    "women in positions of power (when framed as a gender issue).\n\n"
-                    "Exclude: articles that only incidentally mention a woman or girl "
-                    "(e.g. a woman winning a cooking contest, a woman buying a house), "
-                    "general crime, sports results, business news unless directly about gender.\n\n"
-                    f"{text}\n\nAnswer YES or NO:"
-                ),
-            }],
-        )
-        answer = message.content[0].text.strip().upper()
-        return answer.startswith("YES")
-    except Exception as e:
-        print(f"    [LLM fallback] {e}", flush=True)
-        return matches_keywords(title, summary)
-
-
 def get_topics(text):
     text_lower = text.lower()
     matched = []
@@ -616,20 +357,15 @@ def scrape_all_feeds():
                     published_at = datetime.now().isoformat()
 
                 DACH = {"Germany", "Austria", "Switzerland"}
-                always_keep = source_name in ALWAYS_INCLUDE_SOURCES or country not in DACH
+always_keep = source_name in ALWAYS_INCLUDE_SOURCES or country not in DACH
 
                 # Translate title for keyword matching (non-DE/EN sources)
                 title_for_matching = title
                 if language not in ("DE", "EN"):
                     title_for_matching = translate_to_german(title, language)
 
-                if not always_keep:
-                    # Fast pre-filter: skip if no keyword match at all
-                    if not matches_keywords(title_for_matching, summary):
-                        continue
-                    # Contextual filter: LLM decides if it's genuinely relevant
-                    if not is_relevant_by_llm(title_for_matching, summary):
-                        continue
+                if not always_keep and not matches_keywords(title_for_matching, summary):
+                    continue
 
                 # Use translated title for storage
                 stored_title = title_for_matching if language not in ("DE", "EN") else title
@@ -700,12 +436,6 @@ def get_all_articles(category=None, source=None, search=None, topic=None,
 
     query  = "SELECT * FROM articles WHERE 1=1"
     params = []
-
-    # Hard cap: never return articles older than 90 days
-    if not time_range:
-        default_cutoff = (datetime.now() - timedelta(days=90)).isoformat()
-        query += f" AND scraped_at >= {ph}"
-        params.append(default_cutoff)
 
     if category:
         query += f" AND (category = {ph} OR tags LIKE {ph})"
