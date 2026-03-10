@@ -279,6 +279,12 @@ def resolve_time_range(label):
 
 # ── API Routes ────────────────────────────────────────────────────────────────
 
+@app.route("/health")
+def health():
+    """Keep-alive endpoint — ping with UptimeRobot every 5 min to prevent cold starts."""
+    return jsonify({"status": "ok"}), 200
+
+
 @app.route("/api/articles")
 def articles():
     category   = request.args.get("category")
@@ -597,13 +603,31 @@ def scrape_podcasts():
                 f.get("summary") or f.get("subtitle") or f.get("description") or ""
             )[:300].strip()
 
-            # Cover image: try itunes:image then channel image
+            # Cover image: try multiple extraction methods robustly
             cover_url = ""
-            if hasattr(f, "image"):
-                cover_url = f.image.get("href") or f.image.get("url", "")
+
+            # 1. feedparser itunes:image (AttributeDict — use getattr, not isinstance)
+            itunes_img = getattr(f, "itunes_image", None)
+            if itunes_img and hasattr(itunes_img, "get"):
+                cover_url = itunes_img.get("href", "") or itunes_img.get("url", "")
+
+            # 2. Standard RSS <image> element
             if not cover_url:
-                itunes_img = f.get("itunes_image", {})
-                cover_url = itunes_img.get("href", "") if isinstance(itunes_img, dict) else ""
+                img = getattr(f, "image", None)
+                if img and hasattr(img, "get"):
+                    cover_url = img.get("href", "") or img.get("url", "")
+
+            # 3. Regex fallback on raw XML (catches Podigee and other edge cases)
+            if not cover_url:
+                raw_match = re.search(
+                    r'<itunes:image\s+href=["\']([^"\']+)["\']',
+                    resp.text, re.IGNORECASE
+                ) or re.search(
+                    r'<itunes:image>[^<]*<url>([^<]+)</url>',
+                    resp.text, re.IGNORECASE
+                )
+                if raw_match:
+                    cover_url = raw_match.group(1).strip()
 
             website_url = f.get("link", "")
 
